@@ -1,0 +1,101 @@
+package patterns;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Scanner;
+
+public class Jdbc {
+	public static Connection con;
+	public static Statement st;
+	public static PreparedStatement pst;
+	static Scanner sc = new Scanner(System.in);
+	public static Connection connect() throws SQLException, ClassNotFoundException {
+		Class.forName("oracle.jdbc.driver.OracleDriver");
+		Connection con = DriverManager.getConnection("jdbc:oracle:thin:@172.16.100.15:1521/orcl", "system", "user");
+		return con;
+	}
+	public static void create() throws ClassNotFoundException, SQLException {
+		Connection con = Jdbc.connect();
+		Statement st = con.createStatement();
+		st.execute("create table cash (denomination number(7),Number number(5),value number(10)");
+		st.execute("desc cash");
+	}
+
+	public static void insert() throws ClassNotFoundException, SQLException {
+
+		con = Jdbc.connect();
+		for (int i = 0; i < 3; i++) {
+			pst = con.prepareStatement("insert into cash values(?,?,?)");
+			System.out.println("Enter Denomination:");
+			int denomination = sc.nextInt();
+			pst.setInt(1, denomination);
+			System.out.println("Enter number:");
+			int number = sc.nextInt();
+			pst.setInt(2, number);
+			int value = denomination * number;
+			pst.setInt(3, value);
+			pst.executeUpdate();
+			st.execute("select * from cash");
+		}
+	}
+	public static void user() throws ClassNotFoundException, SQLException {
+		con = Jdbc.connect();
+		st = con.createStatement();
+		st.execute("create table customer (accountno number(10),name varchar2(20),pinno number(7),balance number(8)");
+		st.execute("desc customer");
+
+	}
+
+	public static void userinsert() throws ClassNotFoundException, SQLException {
+		con = Jdbc.connect();
+		for (int i = 0; i < 5; i++) {
+			pst = con.prepareStatement("insert into customer values(?,?,?,?)");
+			System.out.println("Enter account no:");
+			pst.setInt(1, sc.nextInt());
+			System.out.println("Enter account holder name:");
+			pst.setString(2, sc.nextLine());
+			System.out.println("Enter the pin:");
+			pst.setInt(3, sc.nextInt());
+			System.out.println("Enter the balance:");
+			pst.setInt(4, sc.nextInt());
+			pst.executeUpdate();
+		}
+	}
+	public static void amount() throws ClassNotFoundException, SQLException {
+		con = Jdbc.connect();
+		System.out.println("Enter the accountno:");
+		int accno = sc.nextInt();
+		System.out.println("Enter the pin");
+		int accountpin = sc.nextInt();
+		st.execute("select *from customer where accountno=accno && pin=accountpin");
+		System.out.println("1.check balanc0e\n2.withdraw money\n3.transfer money\n4.check atm balance\n");
+		int choice = sc.nextInt();
+		switch (choice) {
+		case 1:
+			checkbalance();
+			break;
+		}
+	}
+	public static void checkbalance() throws ClassNotFoundException, SQLException {
+		con = Jdbc.connect();
+		st = con.createStatement();
+		System.out.println("Enter accountno:");
+		int accnum = sc.nextInt();
+		pst = con.prepareStatement("select balance from customer where accountno=?");
+		pst.setInt(1, accnum);
+		pst.executeUpdate();
+		st.execute("select balance from customer where accountno=accnum");
+	}
+
+	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+		connect();
+		create();
+		insert();
+		user();
+		userinsert();
+		amount();
+
+	}
+}
